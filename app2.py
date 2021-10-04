@@ -8,8 +8,8 @@ from flask import Flask
 from os import environ
 
 import dash
-from dash import dcc
-from dash import html
+import dash_core_components as dcc
+import dash_html_components as html
 from dash.dependencies import Input, Output
 
 import plotly.express as px
@@ -48,19 +48,19 @@ app.layout = html.Div([
           **Mohr's circle parameters**
           '''),
 
-        html.Label('sigam1:'),
+        html.Label(children='sigma1:', style={'margin-top': '20px'}),
         dcc.Slider(id='s1', min=0, max=xmax, value=350, step=20,
             marks={0:'0', 100:'100', 200:'200', 300:'300', 400:'400', 500:'500'},
             tooltip={'always_visible':True, 'placement':'topLeft'}
         ),
 
-        html.Label('sigma3'),
+        html.Label(children='sigma3:', style={'margin-top': '20px'}),
         dcc.Slider(id='s3', min=0, max=xmax, value=120, step=20,
             marks={0:'0', 100:'100', 200:'200', 300:'300', 400:'400', 500:'500'},
             tooltip={'always_visible':True, 'placement':'topLeft'}
         ),
         
-        html.Label('theta (degrees)'),
+        html.Label(children='theta (degrees):', style={'margin-top': '20px'}),
         dcc.Slider(id='theta', min=0, max=np.pi/2, value=np.pi/4, step=np.pi/24,
             marks={0:'0', np.pi/8:'22.5', np.pi/4:'45', 3*np.pi/8:'66.5', np.pi/2:'90'},
             #tooltip={'always_visible':True, 'placement':'topLeft'}
@@ -71,20 +71,21 @@ app.layout = html.Div([
             options=[
                 {'label': 'Show Mohrs Circle', 'value': 'circle'}
             ],
-            value=['circle']
+            value=['circle'],
+            style={'margin-top': '20px'}
         )
-        ], style={'width': '48%', 'display': 'inline-block'}),
+        ], style={'width': '45%', 'display': 'inline-block', 'margin-left': '30px', 'margin-right': '30px', 'vertical-align': 'top'}),
 
         html.Div([
             dcc.Markdown('''
             **Failure envelope parameters**
             '''),
-            html.Label('coh_stren'),
+            html.Label(children='coh_stren:', style={'margin-top': '20px'}),
             dcc.Slider(id='s_o', min=0.0, max=150.0, value=50.0, step=10.0,
                 marks={0:'0', 25:'25', 50:'50', 75:'75', 100:'100', 125:'125', 150:'150'},
                 tooltip={'always_visible':True, 'placement':'topLeft'}
             ),
-            html.Label('coeff. int. frict'),
+            html.Label(children='coeff. int. frict:', style={'margin-top': '20px'}),
             dcc.Slider(id='mu', min=0.0, max=2.0, value=0.5, step=0.1,
                 marks={0:'0', 0.5:'0.5', 1:'1', 1.5:'1.5', 2:'2'},
                 tooltip={'always_visible':True, 'placement':'topLeft'}
@@ -94,9 +95,10 @@ app.layout = html.Div([
                 options=[
                     {'label': 'Show failure envelope', 'value': 'coulomb'},
                 ],
-                value=['coulomb']
+                value=['coulomb'],
+                style={'margin-top': '20px'}
             )
-        ], style={'width': '48%', 'display': 'inline-block'}),
+        ], style={'width': '45%', 'display': 'inline-block', 'vertical-align': 'top'}),
 
         html.Div([
             dcc.Graph(id='s1s3_graph'),
@@ -109,7 +111,7 @@ app.layout = html.Div([
            ### Sources
            ''')
      ])
-],style={'width': '800px'})
+],style={'width': '1000px'})
 
 
 
