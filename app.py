@@ -11,6 +11,7 @@ import dash
 from dash import dcc
 from dash import html
 from dash.dependencies import Input, Output
+import base64
 
 import plotly.express as px
 import plotly.graph_objects as go
@@ -32,6 +33,10 @@ app = dash.Dash(
 intro = open('introduction.md', 'r')
 intro_md = intro.read()
 
+image_filename = 'mohrs-diagram.png'
+encoded_image = base64.b64encode(open(image_filename, 'rb').read())
+
+
 xmin = -200
 xmax = 500
 ymin = -300
@@ -39,9 +44,13 @@ ymax = 300
 
 app.layout = html.Div([
     html.Div([
-        dcc.Markdown(
-            children=intro_md
+      dcc.Markdown(
+          children=intro_md
         ),
+    html.Div([
+      html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()), style={'width': '600px'})
+
+    ], style={'margin-left': '50px', 'margin-bottom': '20px'}),
     ]),
 
 #Tabs: https://dash.plotly.com/dash-core-components/tabs
