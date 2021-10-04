@@ -8,8 +8,8 @@ from flask import Flask
 from os import environ
 
 import dash
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import dcc
+from dash import html
 from dash.dependencies import Input, Output
 
 import plotly.express as px
@@ -24,14 +24,15 @@ server = Flask(__name__)
 app = dash.Dash(
     server=server,
     url_base_pathname=environ.get('JUPYTERHUB_SERVICE_PREFIX', '/'),
-    external_stylesheets=external_stylesheets
+    external_stylesheets=external_stylesheets,
+    suppress_callback_exceptions=True #because of the tabs, not all callbacks are accessible so we suppress callback exceptions
 )
 
 # load introduction text
 intro = open('introduction.md', 'r')
 intro_md = intro.read()
 
-xmin = -300
+xmin = -200
 xmax = 500
 ymin = -300
 ymax = 300
@@ -57,6 +58,10 @@ app.layout = html.Div([
            ----
 
            ### Sources
+
+           - Concept: K. Hickey, F. Jones
+           - Code: F. Jones, with J. Byer
+           - Copyright (c) 2021 Francis H.M. Jones.
            ''')
     ])
 ], style={'width': '1000px'})
@@ -72,54 +77,57 @@ def render_content(tab):
                       **Mohr's circle parameters**
                       '''),
 
-                html.Label(children='Mean stress', style={'margin-top': '20px'}),
+                html.Label(children='Mean stress (MPa)', style={'margin-top': '20px'}),
                 dcc.Slider(id='s_m', min=0, max=xmax, value=xmax / 2, step=20,
-                           marks={0: '0', 100: '100', 200: '200', 300: '300', 400: '400', 500: '500'}
-                           # tooltip={'always_visible':True, 'placement':'topLeft'}
+                           marks={0: '0', 100: '100', 200: '200', 300: '300', 400: '400', 500: '500'},
+                           tooltip={'always_visible':True, 'placement':'topLeft'}
                            ),
 
-                html.Label(children='deviatoric stress', style={'margin-top': '20px'}),
+                html.Label(children='Deviatoric stress (MPa)', style={'margin-top': '20px'}),
                 dcc.Slider(id='s_d', min=0.0, max=150, value=80, step=10,
-                           marks={0: '0', 25: '25', 50: '50', 75: '75', 100: '100', 125: '125', 150: '150'}
-                           # tooltip={'always_visible':True, 'placement':'topLeft'}
+                           marks={0: '0', 25: '25', 50: '50', 75: '75', 100: '100', 125: '125', 150: '150'},
+                           tooltip={'always_visible':True, 'placement':'topLeft'}
                            ),
 
-                html.Label(children='theta (degrees)', style={'margin-top': '20px'}),
-                dcc.Slider(id='theta', min=0, max=np.pi / 2, value=np.pi / 4, step=np.pi / 24,
-                           marks={0: '0', np.pi / 8: '22.5', np.pi / 4: '45', 3 * np.pi / 8: '66.5', np.pi / 2: '90'},
-                           # tooltip={'always_visible':True, 'placement':'topLeft'}
-                           ),
+                html.Label(children='Theta (degrees)', style={'margin-top': '20px'}),
+                dcc.Slider(id='theta', min=0, max=90, value=40, step=10,
+                           marks={0: '0', 20:'20', 40:'40', 60:'60', 80:'80', 90:'90'},
+                           tooltip={'always_visible':True, 'placement':'topLeft'}
+                           )
 
+            ], style={'width': '45%', 'display': 'inline-block', 'vertical-align': 'top'}),
+#            ], style={'width': '45%', 'display': 'inline-block', 'margin-left': '30px', 'margin-right': '30px', 'vertical-align': 'top'}),
+
+            html.Div([
+                dcc.Markdown('''
+                        **Failure envelope parameters**
+                        '''),
+                html.Label(children='Cohesive strength (MPa)', style={'margin-top': '20px'}),
+                dcc.Slider(id='s_o', min=0.0, max=150.0, value=50.0, step=10.0,
+                           marks={0: '0', 25: '25', 50: '50', 75: '75', 100: '100', 125: '125', 150: '150'},
+                           tooltip={'always_visible':True, 'placement':'topLeft'}
+                           ),
+                html.Label(children='Coeff. of internal friction', style={'margin-top': '20px'}),
+                dcc.Slider(id='mu', min=0.0, max=2.0, value=0.5, step=0.1,
+                           marks={0: '0', 0.5: '0.5', 1: '1', 1.5: '1.5', 2: '2'},
+                           tooltip={'always_visible':True, 'placement':'topLeft'}
+                           ),
                 dcc.Checklist(
                     id='circle_checkbox',
                     options=[
                         {'label': 'Show Mohrs Circle', 'value': 'circle'}
                     ],
                     value=['circle'],
-                    style={'margin-top': '20px'}
-                )
-            ], style={'width': '45%', 'display': 'inline-block', 'margin-left': '30px', 'margin-right': '30px',
-                      'vertical-align': 'top'}),
+                    style={'margin-top': '20px', 'margin-left': '80px'}
+                ),
 
-            html.Div([
-                dcc.Markdown('''
-                        **Failure envelope parameters**
-                        '''),
-                html.Label(children='coh_stren', style={'margin-top': '20px'}),
-                dcc.Slider(id='s_o', min=0.0, max=150.0, value=50.0, step=10.0,
-                           marks={0: '0', 25: '25', 50: '50', 75: '75', 100: '100', 125: '125', 150: '150'}
-                           ),
-                html.Label(children='coeff. int frict', style={'margin-top': '20px'}),
-                dcc.Slider(id='mu', min=0.0, max=2.0, value=0.5, step=0.1,
-                           marks={0: '0', 0.5: '0.5', 1: '1', 1.5: '1.5', 2: '2'}
-                           ),
                 dcc.Checklist(
                     id='coulomb_checkbox',
                     options=[
                         {'label': 'Show failure envelope', 'value': 'coulomb'},
                     ],
                     value=['coulomb'],
-                    style={'margin-top': '20px'}
+                    style={'margin-top': '20px', 'margin-left': '80px'}
                 )
             ], style={'width': '45%', 'display': 'inline-block', 'vertical-align': 'top'}),
 
@@ -134,56 +142,57 @@ def render_content(tab):
                   **Mohr's circle parameters**
                   '''),
 
-                html.Label(children='sigma1:', style={'margin-top': '20px'}),
+                html.Label(children='Sigma_1 (MPa)', style={'margin-top': '20px'}),
                 dcc.Slider(id='s1', min=0, max=xmax, value=350, step=20,
                            marks={0: '0', 100: '100', 200: '200', 300: '300', 400: '400', 500: '500'},
                            tooltip={'always_visible': True, 'placement': 'topLeft'}
                            ),
 
-                html.Label(children='sigma3:', style={'margin-top': '20px'}),
+                html.Label(children='Sigma_3 (MPa)', style={'margin-top': '20px'}),
                 dcc.Slider(id='s3', min=0, max=xmax, value=120, step=20,
                            marks={0: '0', 100: '100', 200: '200', 300: '300', 400: '400', 500: '500'},
                            tooltip={'always_visible': True, 'placement': 'topLeft'}
                            ),
 
-                html.Label(children='theta (degrees):', style={'margin-top': '20px'}),
-                dcc.Slider(id='theta', min=0, max=np.pi / 2, value=np.pi / 4, step=np.pi / 24,
-                           marks={0: '0', np.pi / 8: '22.5', np.pi / 4: '45', 3 * np.pi / 8: '66.5', np.pi / 2: '90'},
-                           # tooltip={'always_visible':True, 'placement':'topLeft'}
-                           ),
+                html.Label(children='Theta (degrees)', style={'margin-top': '20px'}),
+                dcc.Slider(id='theta', min=0, max=90, value=40, step=10,
+                           marks={0: '0', 20:'20', 40:'40', 60:'60', 80:'80', 90:'90'},
+                           tooltip={'always_visible':True, 'placement':'topLeft'}
+                           )
 
+            ], style={'width': '45%', 'display': 'inline-block', 'vertical-align': 'top'}),
+#            ], style={'width': '45%', 'display': 'inline-block', 'margin-left': '30px', 'margin-right': '30px', 'vertical-align': 'top'}),
+
+            html.Div([
+                dcc.Markdown('''
+                    **Failure envelope parameters**
+                    '''),
+                html.Label(children='Cohesive strength (MPa)', style={'margin-top': '20px'}),
+                dcc.Slider(id='s_o', min=0.0, max=150.0, value=50.0, step=10.0,
+                           marks={0: '0', 25: '25', 50: '50', 75: '75', 100: '100', 125: '125', 150: '150'},
+                           tooltip={'always_visible': True, 'placement': 'topLeft'}
+                           ),
+                html.Label(children='Coeff. of internal friction', style={'margin-top': '20px'}),
+                dcc.Slider(id='mu', min=0.0, max=2.0, value=0.5, step=0.1,
+                           marks={0: '0', 0.5: '0.5', 1: '1', 1.5: '1.5', 2: '2'},
+                           tooltip={'always_visible': True, 'placement': 'topLeft'}
+                           ),
                 dcc.Checklist(
                     id='circle_checkbox',
                     options=[
                         {'label': 'Show Mohrs Circle', 'value': 'circle'}
                     ],
                     value=['circle'],
-                    style={'margin-top': '20px'}
-                )
-            ], style={'width': '45%', 'display': 'inline-block', 'margin-left': '30px', 'margin-right': '30px',
-                      'vertical-align': 'top'}),
+                    style={'margin-top': '20px', 'margin-left': '80px'}
+                ),
 
-            html.Div([
-                dcc.Markdown('''
-                    **Failure envelope parameters**
-                    '''),
-                html.Label(children='coh_stren:', style={'margin-top': '20px'}),
-                dcc.Slider(id='s_o', min=0.0, max=150.0, value=50.0, step=10.0,
-                           marks={0: '0', 25: '25', 50: '50', 75: '75', 100: '100', 125: '125', 150: '150'},
-                           tooltip={'always_visible': True, 'placement': 'topLeft'}
-                           ),
-                html.Label(children='coeff. int. frict:', style={'margin-top': '20px'}),
-                dcc.Slider(id='mu', min=0.0, max=2.0, value=0.5, step=0.1,
-                           marks={0: '0', 0.5: '0.5', 1: '1', 1.5: '1.5', 2: '2'},
-                           tooltip={'always_visible': True, 'placement': 'topLeft'}
-                           ),
                 dcc.Checklist(
                     id='coulomb_checkbox',
                     options=[
                         {'label': 'Show failure envelope', 'value': 'coulomb'},
                     ],
                     value=['coulomb'],
-                    style={'margin-top': '20px'}
+                    style={'margin-top': '20px', 'margin-left': '80px'}
                 )
             ], style={'width': '45%', 'display': 'inline-block', 'vertical-align': 'top'}),
 
@@ -224,9 +233,10 @@ def update_graph(circle_checkbox, coulomb_checkbox, s_m, s_d, theta, s_o, mu, ):
     s_n = 0.5 * (s1 + s3) + 0.5 * (s1 - s3) * np.cos(2 * angle)
     s_s = 0.5 * (s1 - s3) * np.sin(2 * angle)
 
+    theta_rad = theta * np.pi/180
     # draw the angle representing the plane of interest
-    x = np.array([s_m, 0.5 * (s1 + s3) + 0.5 * (s1 - s3) * np.cos(2 * theta)])
-    y = np.array([0, 0.5 * (s1 - s3) * np.sin(2 * theta)])
+    x = np.array([s_m, 0.5 * (s1 + s3) + 0.5 * (s1 - s3) * np.cos(2 * theta_rad)])
+    y = np.array([0, 0.5 * (s1 - s3) * np.sin(2 * theta_rad)])
 
     # generate the plot.
     fig = go.Figure()
@@ -242,7 +252,7 @@ def update_graph(circle_checkbox, coulomb_checkbox, s_m, s_d, theta, s_o, mu, ):
     # We want a "square" figure so the circle is seen as a circle
     # Ranges for xaxis and yaxis, and the plot width/height must be be chosen for a square graph.
     # width and height are in pixels.
-    fig.update_layout(xaxis_title='Sigma_n', yaxis_title='Sigma_s', width=600, height=500, showlegend=False)
+    fig.update_layout(xaxis_title='Sigma_n (MPa)', yaxis_title='Sigma_s (MPa)', width=700, height=600, showlegend=False)
     #    fig.update_layout(xaxis_title='Sigma_n', yaxis_title='Sigma_s', width=800, height=660, showlegend=False)
     fig.update_xaxes(range=[xmin, xmax])
     fig.update_yaxes(range=[ymin, ymax])
@@ -278,9 +288,10 @@ def update_graph(circle_checkbox, coulomb_checkbox, s1, s3, theta, s_o, mu, ):
     s_n = 0.5 * (s1 + s3) + 0.5 * (s1 - s3) * np.cos(2 * angle)
     s_s = 0.5 * (s1 - s3) * np.sin(2 * angle)
 
+    theta_rad = theta * np.pi/180
     # draw the angle representing the plane of interest
-    x = np.array([s_m, 0.5 * (s1 + s3) + 0.5 * (s1 - s3) * np.cos(2 * theta)])
-    y = np.array([0, 0.5 * (s1 - s3) * np.sin(2 * theta)])
+    x = np.array([s_m, 0.5 * (s1 + s3) + 0.5 * (s1 - s3) * np.cos(2 * theta_rad)])
+    y = np.array([0, 0.5 * (s1 - s3) * np.sin(2 * theta_rad)])
 
     coulx1 = np.linspace(0, xmax, 50)
     couly1 = s_o + mu * coulx1
@@ -301,20 +312,12 @@ def update_graph(circle_checkbox, coulomb_checkbox, s1, s3, theta, s_o, mu, ):
     # We want a "square" figure so the circle is seen as a circle
     # Ranges for xaxis and yaxis, and the plot width/height must be be chosen for a square graph.
     # width and height are in pixels.
-    fig.update_layout(xaxis_title='Sigma_n', yaxis_title='Sigma_s', width=600, height=500, showlegend=False)
+    fig.update_layout(xaxis_title='Sigma_n (MPa)', yaxis_title='Sigma_s (MPa)', width=700, height=600, showlegend=False)
     #    fig.update_layout(xaxis_title='Sigma_n', yaxis_title='Sigma_s', width=800, height=660, showlegend=False)
     fig.update_xaxes(range=[xmin, xmax])
     fig.update_yaxes(range=[ymin, ymax])
 
     return fig
-
-
-
-
-
-
-
-
 
 
 if __name__ == '__main__':

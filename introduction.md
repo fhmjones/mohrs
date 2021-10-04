@@ -2,11 +2,11 @@
 
 **Purpose:** Manipulate Mohr's circles for analysis of stress in the Earth's crust.
 
-Two versions (eventually to become tabs in one app): One with adjustable deviatoric and mean stress and a second with adjustable sigma1 and sigma3.
+**Background:**
+- The supplamentary e-module for [chapters 4 & 5, "Stress"](https://folk.uib.no/nglhe/StructuralGeoBookEmodules2ndEd.html) in Haakon Fossen's textbook "Structural Geology".
+- See also the second half of [Ch. 6 of Allmendinger (PDF)](http://www.geo.cornell.edu/geology/faculty/RWA/structure-lab-manual/chapter-6.pdf).
 
-**Background:** Lecture content from a first-exposure course on geological structures (the "stress" lesson), and some accompanying materials are included as PDFs.
-For more comprehensive geological context try second half of [Ch. 6 of Allmendinger (PDF)](http://www.geo.cornell.edu/geology/faculty/RWA/structure-lab-manual/chapter-6.pdf), at Cornell.
-
-**Instructions:** Explore the dashboard and its controls.
+**Instructions:**
+Two tabs: One changes Mohr's circle by adjusting deviatoric and mean stress and the other by adjusting sigma_1 and sigma_3.
 
 ----------
