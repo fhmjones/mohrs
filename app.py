@@ -32,6 +32,8 @@ app = dash.Dash(
 # load introduction text
 intro = open('introduction.md', 'r')
 intro_md = intro.read()
+intro = open('sources.md', 'r')
+sources_md = intro.read()
 
 image_filename = 'mohrs-diagram.png'
 encoded_image = base64.b64encode(open(image_filename, 'rb').read())
@@ -47,10 +49,6 @@ app.layout = html.Div([
       dcc.Markdown(
           children=intro_md
         ),
-    html.Div([
-      html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()), style={'width': '600px'})
-
-    ], style={'margin-left': '50px', 'margin-bottom': '20px'}),
     ]),
 
 #Tabs: https://dash.plotly.com/dash-core-components/tabs
@@ -62,17 +60,24 @@ app.layout = html.Div([
         html.Div(id='tabs-content')
     ], style={'width': '100%', 'display': 'inline-block', 'padding': '0 20', 'vertical-align': 'middle', 'margin-bottom': 30, 'margin-right': 50, 'margin-left': 20}),
 
+# below the graph
     html.Div([
-        dcc.Markdown('''
-           ----
-
-           ### Sources
-
-           - Concept: K. Hickey, F. Jones
-           - Code: F. Jones, with J. Byer
-           - Copyright (c) 2021 Francis H.M. Jones.
+        html.Div([
+            dcc.Markdown('''
+                ----
            ''')
+        ]),
+        html.Div([
+            html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()), style={'width': '600px'})
+        ], style={'margin-left': '50px', 'margin-bottom': '20px'}),
+    
+    html.Div([
+            dcc.Markdown(
+                children=sources_md
+            )
+        ])
     ])
+
 ], style={'width': '1000px'})
 
 
@@ -141,7 +146,12 @@ def render_content(tab):
             ], style={'width': '45%', 'display': 'inline-block', 'vertical-align': 'top'}),
 
             html.Div([
-                dcc.Graph(id='mean_dev_graph'),
+                dcc.Graph(
+                    id='mean_dev_graph',
+                    config={
+                        'displayModeBar': True,
+                        'modeBarButtonsToRemove': ['select', 'lasso2d', 'resetScale'],                     
+                }),
             ]),
         ])
     elif tab == 'tab2':
@@ -206,7 +216,12 @@ def render_content(tab):
             ], style={'width': '45%', 'display': 'inline-block', 'vertical-align': 'top'}),
 
             html.Div([
-                dcc.Graph(id='s1s3_graph'),
+                dcc.Graph(
+                    id='s1s3_graph',
+                    config={
+                        'displayModeBar': True,
+                        'modeBarButtonsToRemove': ['select', 'lasso2d', 'resetScale'],                     
+                }),
             ]),
         ])
 
@@ -263,6 +278,7 @@ def update_graph(circle_checkbox, coulomb_checkbox, s_m, s_d, theta, s_o, mu, ):
     # width and height are in pixels.
     fig.update_layout(xaxis_title='Sigma_n (MPa)', yaxis_title='Sigma_s (MPa)', width=700, height=600, showlegend=False)
     #    fig.update_layout(xaxis_title='Sigma_n', yaxis_title='Sigma_s', width=800, height=660, showlegend=False)
+    fig.update_layout(title_text="Mohr's Circle with failure envelope")
     fig.update_xaxes(range=[xmin, xmax])
     fig.update_yaxes(range=[ymin, ymax])
 
@@ -323,6 +339,7 @@ def update_graph(circle_checkbox, coulomb_checkbox, s1, s3, theta, s_o, mu, ):
     # width and height are in pixels.
     fig.update_layout(xaxis_title='Sigma_n (MPa)', yaxis_title='Sigma_s (MPa)', width=700, height=600, showlegend=False)
     #    fig.update_layout(xaxis_title='Sigma_n', yaxis_title='Sigma_s', width=800, height=660, showlegend=False)
+    fig.update_layout(title_text="Mohr's Circle with failure envelope")
     fig.update_xaxes(range=[xmin, xmax])
     fig.update_yaxes(range=[ymin, ymax])
 
