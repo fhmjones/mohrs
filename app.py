@@ -54,8 +54,8 @@ app.layout = html.Div([
 #Tabs: https://dash.plotly.com/dash-core-components/tabs
     html.Div([
         dcc.Tabs(id='tabs', value='tab1', children=[
-            dcc.Tab(label='Set Mean and Deviatoric Stresses', value='tab1'),
-            dcc.Tab(label='Set sigma1 and sigma2', value='tab2'),
+            dcc.Tab(label='(1) Set Mean and Deviatoric Stresses', value='tab1'),
+            dcc.Tab(label='(2) Set sigma1 and sigma3', value='tab2'),
         ]),
         html.Div(id='tabs-content')
     ], style={'width': '100%', 'display': 'inline-block', 'padding': '0 20', 'vertical-align': 'middle', 'margin-bottom': 30, 'margin-right': 50, 'margin-left': 20}),
@@ -104,7 +104,7 @@ def render_content(tab):
                            ),
 
                 html.Label(children='Theta (degrees)', style={'margin-top': '20px'}),
-                dcc.Slider(id='theta', min=0, max=90, value=40, step=10,
+                dcc.Slider(id='theta', min=0, max=90, value=40, step=5,
                            marks={0: '0', 20:'20', 40:'40', 60:'60', 80:'80', 90:'90'},
                            tooltip={'always_visible':True, 'placement':'topLeft'}
                            )
@@ -131,7 +131,7 @@ def render_content(tab):
                     options=[
                         {'label': 'Show Mohrs Circle', 'value': 'circle'}
                     ],
-                    value=['circle'],
+                    value=['circle'], # default is "on"
                     style={'margin-top': '20px', 'margin-left': '80px'}
                 ),
 
@@ -140,7 +140,7 @@ def render_content(tab):
                     options=[
                         {'label': 'Show failure envelope', 'value': 'coulomb'},
                     ],
-                    value=['coulomb'],
+                    value=[], # default is "off"
                     style={'margin-top': '20px', 'margin-left': '80px'}
                 )
             ], style={'width': '45%', 'display': 'inline-block', 'vertical-align': 'top'}),
@@ -174,7 +174,7 @@ def render_content(tab):
                            ),
 
                 html.Label(children='Theta (degrees)', style={'margin-top': '20px'}),
-                dcc.Slider(id='theta', min=0, max=90, value=40, step=10,
+                dcc.Slider(id='theta', min=0, max=90, value=40, step=5,
                            marks={0: '0', 20:'20', 40:'40', 60:'60', 80:'80', 90:'90'},
                            tooltip={'always_visible':True, 'placement':'topLeft'}
                            )
@@ -201,7 +201,7 @@ def render_content(tab):
                     options=[
                         {'label': 'Show Mohrs Circle', 'value': 'circle'}
                     ],
-                    value=['circle'],
+                    value=['circle'], # default is "on"
                     style={'margin-top': '20px', 'margin-left': '80px'}
                 ),
 
@@ -210,7 +210,7 @@ def render_content(tab):
                     options=[
                         {'label': 'Show failure envelope', 'value': 'coulomb'},
                     ],
-                    value=['coulomb'],
+                    value=[], # default is "off"
                     style={'margin-top': '20px', 'margin-left': '80px'}
                 )
             ], style={'width': '45%', 'display': 'inline-block', 'vertical-align': 'top'}),
@@ -256,22 +256,67 @@ def update_graph(circle_checkbox, coulomb_checkbox, s_m, s_d, theta, s_o, mu, ):
 
     s_n = 0.5 * (s1 + s3) + 0.5 * (s1 - s3) * np.cos(2 * angle)
     s_s = 0.5 * (s1 - s3) * np.sin(2 * angle)
+    snmin = np.amin(s_n)
+    snmax = np.amax(s_n)
 
     theta_rad = theta * np.pi/180
     # draw the angle representing the plane of interest
     x = np.array([s_m, 0.5 * (s1 + s3) + 0.5 * (s1 - s3) * np.cos(2 * theta_rad)])
     y = np.array([0, 0.5 * (s1 - s3) * np.sin(2 * theta_rad)])
-
+    
     # generate the plot.
     fig = go.Figure()
 
     if circle_checkbox == ['circle']:
-        fig.add_trace(go.Scatter(x=s_n, y=s_s, mode='lines', name='circle'))
-        fig.add_trace(go.Scatter(x=x, y=y, name="linear", line_shape='linear', line=dict(color='green')))
+        fig.add_trace(go.Scatter(
+            x=s_n, 
+            y=s_s, 
+            mode='lines',
+            hovertemplate = 
+                'Sn: %{x:.1f}'+
+                '<br>Ss: %{y:.1f}', 
+            name='circle'))
+        fig.add_trace(go.Scatter(
+            x=x, 
+            y=y, 
+            name="linear", 
+            line_shape='linear', 
+            hovertemplate = 
+                'Sn: %{x:.1f}'+
+                '<br>Ss: %{y:.1f}', 
+            line=dict(color='green')))
+        
+        # for annotations, see https://plotly.com/python/text-and-annotations/
+        fig.add_annotation(x=snmin, y=0,
+            text="S_3",
+            showarrow=True,
+            arrowhead=1)
+        fig.add_annotation(x=snmax, y=0,
+            text="S_1",
+            showarrow=True,
+            ax=20,
+            ay=-30,
+            arrowhead=1)
 
     if coulomb_checkbox == ['coulomb']:
-        fig.add_trace(go.Scatter(x=coulx1, y=couly1, mode='lines', name='Coulomb+', line=dict(color='red')))
-        fig.add_trace(go.Scatter(x=coulx2, y=couly2, mode='lines', name='Coulomb-', line=dict(color='red')))
+        fig.add_trace(go.Scatter(
+            x=coulx1, 
+            y=couly1, 
+            mode='lines', 
+            hovertemplate = 
+                'Sn: %{x:.1f}'+
+                '<br>Ss: %{y:.1f}', 
+            name='Coulomb+', 
+            line=dict(color='red')))
+        fig.add_trace(go.Scatter(
+            x=coulx2, 
+            y=couly2, 
+            mode='lines', 
+            hovertemplate = 
+                'Sn: %{x:.1f}'+
+                '<br>Ss: %{y:.1f}', 
+            name='Coulomb-', 
+            line=dict(color='red')))        
 
     # We want a "square" figure so the circle is seen as a circle
     # Ranges for xaxis and yaxis, and the plot width/height must be be chosen for a square graph.
@@ -312,6 +357,8 @@ def update_graph(circle_checkbox, coulomb_checkbox, s1, s3, theta, s_o, mu, ):
 
     s_n = 0.5 * (s1 + s3) + 0.5 * (s1 - s3) * np.cos(2 * angle)
     s_s = 0.5 * (s1 - s3) * np.sin(2 * angle)
+    snmin = np.amin(s_n)
+    snmax = np.amax(s_n)
 
     theta_rad = theta * np.pi/180
     # draw the angle representing the plane of interest
@@ -327,12 +374,55 @@ def update_graph(circle_checkbox, coulomb_checkbox, s1, s3, theta, s_o, mu, ):
     fig = go.Figure()
 
     if circle_checkbox == ['circle']:
-        fig.add_trace(go.Scatter(x=s_n, y=s_s, mode='lines', name='circle'))
-        fig.add_trace(go.Scatter(x=x, y=y, name="linear", line_shape='linear', line=dict(color='green')))
+        fig.add_trace(go.Scatter(
+            x=s_n, 
+            y=s_s, 
+            mode='lines',
+            hovertemplate = 
+                'Sn: %{x:.1f}'+
+                '<br>Ss: %{y:.1f}', 
+            name='circle'))
+        fig.add_trace(go.Scatter(
+            x=x, 
+            y=y, 
+            name="linear", 
+            line_shape='linear', 
+            hovertemplate = 
+                'Sn: %{x:.1f}'+
+                '<br>Ss: %{y:.1f}', 
+            line=dict(color='green')))
+
+        # for annotations, see https://plotly.com/python/text-and-annotations/
+        fig.add_annotation(x=snmin, y=0,
+            text="S_3",
+            showarrow=True,
+            arrowhead=1)
+        fig.add_annotation(x=snmax, y=0,
+            text="S_1",
+            showarrow=True,
+            ax=20,
+            ay=-30,
+            arrowhead=1)
 
     if coulomb_checkbox == ['coulomb']:
-        fig.add_trace(go.Scatter(x=coulx1, y=couly1, mode='lines', name='Coulomb+', line=dict(color='red')))
-        fig.add_trace(go.Scatter(x=coulx2, y=couly2, mode='lines', name='Coulomb-', line=dict(color='red')))
+        fig.add_trace(go.Scatter(
+            x=coulx1, 
+            y=couly1, 
+            mode='lines', 
+            hovertemplate = 
+                'Sn: %{x:.1f}'+
+                '<br>Ss: %{y:.1f}', 
+            name='Coulomb+', 
+            line=dict(color='red')))
+        fig.add_trace(go.Scatter(
+            x=coulx2, 
+            y=couly2, 
+            mode='lines', 
+            hovertemplate = 
+                'Sn: %{x:.1f}'+
+                '<br>Ss: %{y:.1f}', 
+            name='Coulomb-', 
+            line=dict(color='red')))
 
     # We want a "square" figure so the circle is seen as a circle
     # Ranges for xaxis and yaxis, and the plot width/height must be be chosen for a square graph.
